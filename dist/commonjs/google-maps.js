@@ -31,6 +31,7 @@ var GoogleMaps = (function () {
         this.markers = [];
         this.autoUpdateBounds = false;
         this.mapType = 'ROADMAP';
+        this.loadMapApiScript = true;
         this.map = null;
         this._renderedMarkers = [];
         this._markersSubscription = null;
@@ -48,13 +49,7 @@ var GoogleMaps = (function () {
         if (!config.get('apiKey')) {
             console.error('No API key has been specified.');
         }
-        this.loadApiScript();
         var self = this;
-        this._mapPromise = this._scriptPromise.then(function () {
-            return new Promise(function (resolve, reject) {
-                self._mapResolve = resolve;
-            });
-        });
         this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
             var mrkr = self._renderedMarkers[data.index];
             mrkr.setIcon(mrkr.custom.altIcon);
@@ -69,6 +64,36 @@ var GoogleMaps = (function () {
             self.map.setZoom(17);
         });
     }
+    GoogleMaps.prototype.bind = function () {
+        if (this.loadMapApiScript === "false") {
+            this.loadMapApiScript = false;
+        }
+        if (this.loadMapApiScript) {
+            this.loadApiScript();
+        }
+        else {
+            this._scriptPromise = new Promise(function (resolve, reject) {
+                var RETRY_CHECKED_LOADED_API_COUNT = 20;
+                var checkCount = 1;
+                var it = setInterval(function () {
+                    checkCount++;
+                    if (window.google && window.google.maps) {
+                        clearInterval(it);
+                        resolve();
+                    }
+                    if (checkCount > RETRY_CHECKED_LOADED_API_COUNT) {
+                        clearInterval(it);
+                    }
+                }, 1000);
+            });
+        }
+        var self = this;
+        this._mapPromise = this._scriptPromise.then(function () {
+            return new Promise(function (resolve, reject) {
+                self._mapResolve = resolve;
+            });
+        });
+    };
     GoogleMaps.prototype.attached = function () {
         var _this = this;
         this.element.addEventListener('dragstart', function (evt) {
@@ -396,6 +421,10 @@ var GoogleMaps = (function () {
         aurelia_templating_1.bindable, 
         __metadata('design:type', Object)
     ], GoogleMaps.prototype, "mapType", void 0);
+    __decorate([
+        aurelia_templating_1.bindable, 
+        __metadata('design:type', Object)
+    ], GoogleMaps.prototype, "loadMapApiScript", void 0);
     GoogleMaps = __decorate([
         aurelia_templating_1.customElement('google-map'),
         aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 

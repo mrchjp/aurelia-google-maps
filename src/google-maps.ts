@@ -33,6 +33,7 @@ export class GoogleMaps {
     @bindable markers = [];
     @bindable autoUpdateBounds: boolean = false;
     @bindable mapType = 'ROADMAP';
+    @bindable loadMapApiScript = true;
 
     map = null;
     _renderedMarkers = [];
@@ -55,17 +56,8 @@ export class GoogleMaps {
         if (!config.get('apiKey')) {
             console.error('No API key has been specified.');
         }
-
-        this.loadApiScript();
-
+        
         let self = this;
-        this._mapPromise = this._scriptPromise.then(() => {
-            return new Promise((resolve, reject) => {
-                // Register the the resolve method for _mapPromise
-                self._mapResolve = resolve;
-            });
-        });
-
         this.eventAggregator.subscribe('startMarkerHighlight', function(data) {
             let mrkr = self._renderedMarkers[data.index];
             mrkr.setIcon(mrkr.custom.altIcon);
@@ -83,6 +75,37 @@ export class GoogleMaps {
         });
     }
 
+    bind() {
+        if ((<string><any>this.loadMapApiScript) === "false") {
+            this.loadMapApiScript = false;
+        }
+        if (this.loadMapApiScript) {
+            this.loadApiScript();
+        } else {
+            this._scriptPromise = new Promise((resolve, reject) => {
+                const RETRY_CHECKED_LOADED_API_COUNT = 20;
+                let checkCount = 1;
+                let it = setInterval(() => {
+                    checkCount++;
+                    if ((<any>window).google && (<any>window).google.maps) {
+                        clearInterval(it);
+                        resolve();
+                    }
+                    if (checkCount > RETRY_CHECKED_LOADED_API_COUNT) {
+                        clearInterval(it);
+                    }
+                }, 1000);
+            });
+        }
+
+        let self = this;
+        this._mapPromise = this._scriptPromise.then(() => {
+            return new Promise((resolve, reject) => {
+                // Register the the resolve method for _mapPromise
+                self._mapResolve = resolve;
+            });
+        });
+    }
 
     attached() {
         this.element.addEventListener('dragstart', evt => {

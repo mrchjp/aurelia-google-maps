@@ -12,6 +12,7 @@ export declare class GoogleMaps {
     markers: any[];
     autoUpdateBounds: boolean;
     mapType: string;
+    loadMapApiScript: boolean;
     map: any;
     _renderedMarkers: any[];
     _markersSubscription: any;
@@ -19,6 +20,7 @@ export declare class GoogleMaps {
     _mapPromise: any;
     _mapResolve: any;
     constructor(element: any, taskQueue: any, config: any, bindingEngine: any, eventAggregator: any);
+    bind(): void;
     attached(): void;
     sendBoundsEvent(): void;
     sendApiLoadedEvent(): void;

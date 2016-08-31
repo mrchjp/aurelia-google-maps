@@ -27,6 +27,7 @@ declare module "google-maps" {
         markers: any[];
         autoUpdateBounds: boolean;
         mapType: string;
+        loadMapApiScript: boolean;
         map: any;
         _renderedMarkers: any[];
         _markersSubscription: any;
@@ -34,6 +35,7 @@ declare module "google-maps" {
         _mapPromise: any;
         _mapResolve: any;
         constructor(element: any, taskQueue: any, config: any, bindingEngine: any, eventAggregator: any);
+        bind(): void;
         attached(): void;
         sendBoundsEvent(): void;
         sendApiLoadedEvent(): void;

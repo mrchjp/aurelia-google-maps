@@ -30,6 +30,7 @@ export let GoogleMaps = class GoogleMaps {
         this.markers = [];
         this.autoUpdateBounds = false;
         this.mapType = 'ROADMAP';
+        this.loadMapApiScript = true;
         this.map = null;
         this._renderedMarkers = [];
         this._markersSubscription = null;
@@ -47,13 +48,7 @@ export let GoogleMaps = class GoogleMaps {
         if (!config.get('apiKey')) {
             console.error('No API key has been specified.');
         }
-        this.loadApiScript();
         let self = this;
-        this._mapPromise = this._scriptPromise.then(() => {
-            return new Promise((resolve, reject) => {
-                self._mapResolve = resolve;
-            });
-        });
         this.eventAggregator.subscribe('startMarkerHighlight', function (data) {
             let mrkr = self._renderedMarkers[data.index];
             mrkr.setIcon(mrkr.custom.altIcon);
@@ -66,6 +61,36 @@ export let GoogleMaps = class GoogleMaps {
         this.eventAggregator.subscribe('panToMarker', function (data) {
             self.map.panTo(self._renderedMarkers[data.index].position);
             self.map.setZoom(17);
+        });
+    }
+    bind() {
+        if (this.loadMapApiScript === "false") {
+            this.loadMapApiScript = false;
+        }
+        if (this.loadMapApiScript) {
+            this.loadApiScript();
+        }
+        else {
+            this._scriptPromise = new Promise((resolve, reject) => {
+                const RETRY_CHECKED_LOADED_API_COUNT = 20;
+                let checkCount = 1;
+                let it = setInterval(() => {
+                    checkCount++;
+                    if (window.google && window.google.maps) {
+                        clearInterval(it);
+                        resolve();
+                    }
+                    if (checkCount > RETRY_CHECKED_LOADED_API_COUNT) {
+                        clearInterval(it);
+                    }
+                }, 1000);
+            });
+        }
+        let self = this;
+        this._mapPromise = this._scriptPromise.then(() => {
+            return new Promise((resolve, reject) => {
+                self._mapResolve = resolve;
+            });
         });
     }
     attached() {
@@ -378,6 +403,10 @@ __decorate([
     bindable, 
     __metadata('design:type', Object)
 ], GoogleMaps.prototype, "mapType", void 0);
+__decorate([
+    bindable, 
+    __metadata('design:type', Object)
+], GoogleMaps.prototype, "loadMapApiScript", void 0);
 GoogleMaps = __decorate([
     customElement('google-map'),
     inject(Element, TaskQueue, Configure, BindingEngine, EventAggregator), 
