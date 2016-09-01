@@ -25,12 +25,18 @@ export class GoogleMaps {
     private bindingEngine: BindingEngine;
     private eventAggregator: EventAggregator;
 
-    @bindable address = null;
-    @bindable longitude: number = 0;
-    @bindable latitude: number = 0;
-    @bindable zoom: number = 8;
+    _DEFAULT_ADDRESS = null;
+    _DEFAULT_LONGITUDE = 0;
+    _DEFAULT_LATITUDE = 0;
+    _DEFAULT_ZOOM = 8;
+    _DEFAULT_MARKERS = [];
+
+    @bindable address = this._DEFAULT_ADDRESS;
+    @bindable longitude: number = this._DEFAULT_LONGITUDE;
+    @bindable latitude: number = this._DEFAULT_LATITUDE;
+    @bindable zoom: number = this._DEFAULT_ZOOM;
     @bindable disableDefaultUI: boolean = false;
-    @bindable markers = [];
+    @bindable markers = this._DEFAULT_MARKERS;
     @bindable autoUpdateBounds: boolean = false;
     @bindable mapType = 'ROADMAP';
     @bindable loadMapApiScript = true;
@@ -103,8 +109,30 @@ export class GoogleMaps {
             return new Promise((resolve, reject) => {
                 // Register the the resolve method for _mapPromise
                 self._mapResolve = resolve;
+                this._triggerPropertyChangedHandler();
             });
         });
+    }
+
+    /**
+     * when bind callback is called, {property}Changed callback handler will not be called in first time. 
+     */
+    _triggerPropertyChangedHandler() {
+        if (this.address !== this._DEFAULT_ADDRESS) {
+            this.addressChanged(this.address);
+        }
+        if (this.longitude !== this._DEFAULT_LONGITUDE) {
+            this.longitudeChanged(this.longitude);
+        }
+        if (this.latitude !== this._DEFAULT_LATITUDE) {
+            this.latitudeChanged(this.latitude);
+        }
+        if (this.zoom !== this._DEFAULT_ZOOM) {
+            this.zoomChanged(this.zoom);
+        }
+        if (this.markers && this.markers.length !== this._DEFAULT_MARKERS.length) {
+            this.markersChanged(this.markers);
+        }
     }
 
     attached() {

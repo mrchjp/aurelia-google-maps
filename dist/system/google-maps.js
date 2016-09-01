@@ -42,12 +42,17 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             APILOADED = GM + ":api:loaded";
             GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
-                    this.address = null;
-                    this.longitude = 0;
-                    this.latitude = 0;
-                    this.zoom = 8;
+                    this._DEFAULT_ADDRESS = null;
+                    this._DEFAULT_LONGITUDE = 0;
+                    this._DEFAULT_LATITUDE = 0;
+                    this._DEFAULT_ZOOM = 8;
+                    this._DEFAULT_MARKERS = [];
+                    this.address = this._DEFAULT_ADDRESS;
+                    this.longitude = this._DEFAULT_LONGITUDE;
+                    this.latitude = this._DEFAULT_LATITUDE;
+                    this.zoom = this._DEFAULT_ZOOM;
                     this.disableDefaultUI = false;
-                    this.markers = [];
+                    this.markers = this._DEFAULT_MARKERS;
                     this.autoUpdateBounds = false;
                     this.mapType = 'ROADMAP';
                     this.loadMapApiScript = true;
@@ -84,6 +89,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     });
                 }
                 GoogleMaps.prototype.bind = function () {
+                    var _this = this;
                     if (this.loadMapApiScript === "false") {
                         this.loadMapApiScript = false;
                     }
@@ -110,8 +116,26 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     this._mapPromise = this._scriptPromise.then(function () {
                         return new Promise(function (resolve, reject) {
                             self._mapResolve = resolve;
+                            _this._triggerPropertyChangedHandler();
                         });
                     });
+                };
+                GoogleMaps.prototype._triggerPropertyChangedHandler = function () {
+                    if (this.address !== this._DEFAULT_ADDRESS) {
+                        this.addressChanged(this.address);
+                    }
+                    if (this.longitude !== this._DEFAULT_LONGITUDE) {
+                        this.longitudeChanged(this.longitude);
+                    }
+                    if (this.latitude !== this._DEFAULT_LATITUDE) {
+                        this.latitudeChanged(this.latitude);
+                    }
+                    if (this.zoom !== this._DEFAULT_ZOOM) {
+                        this.zoomChanged(this.zoom);
+                    }
+                    if (this.markers && this.markers.length !== this._DEFAULT_MARKERS.length) {
+                        this.markersChanged(this.markers);
+                    }
                 };
                 GoogleMaps.prototype.attached = function () {
                     var _this = this;

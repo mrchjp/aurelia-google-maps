@@ -19,6 +19,11 @@ declare module "google-maps" {
         private config;
         private bindingEngine;
         private eventAggregator;
+        _DEFAULT_ADDRESS: any;
+        _DEFAULT_LONGITUDE: number;
+        _DEFAULT_LATITUDE: number;
+        _DEFAULT_ZOOM: number;
+        _DEFAULT_MARKERS: any[];
         address: any;
         longitude: number;
         latitude: number;
@@ -36,6 +41,7 @@ declare module "google-maps" {
         _mapResolve: any;
         constructor(element: any, taskQueue: any, config: any, bindingEngine: any, eventAggregator: any);
         bind(): void;
+        _triggerPropertyChangedHandler(): void;
         attached(): void;
         sendBoundsEvent(): void;
         sendApiLoadedEvent(): void;
