@@ -23,6 +23,7 @@ var MARKERMOUSEOUT = GM + ":marker:mouse_out";
 var APILOADED = GM + ":api:loaded";
 var GoogleMaps = (function () {
     function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
+        var _this = this;
         this._DEFAULT_ADDRESS = null;
         this._DEFAULT_LONGITUDE = 0;
         this._DEFAULT_LATITUDE = 0;
@@ -43,6 +44,7 @@ var GoogleMaps = (function () {
         this._scriptPromise = null;
         this._mapPromise = null;
         this._mapResolve = null;
+        this._locationByAddressMarkers = [];
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
@@ -67,6 +69,9 @@ var GoogleMaps = (function () {
         this.eventAggregator.subscribe('panToMarker', function (data) {
             self.map.panTo(self._renderedMarkers[data.index].position);
             self.map.setZoom(17);
+        });
+        this.eventAggregator.subscribe(GM + ":clear:marker", function (data) {
+            _this._clearMarkers();
         });
     }
     GoogleMaps.prototype.bind = function () {
@@ -117,6 +122,16 @@ var GoogleMaps = (function () {
         if (this.markers && this.markers.length !== this._DEFAULT_MARKERS.length) {
             this.markersChanged(this.markers);
         }
+    };
+    GoogleMaps.prototype._clearMarkers = function () {
+        if (!this._locationByAddressMarkers || !this._renderedMarkers) {
+            return;
+        }
+        this._locationByAddressMarkers.concat(this._renderedMarkers).forEach(function (marker) {
+            marker.setMap(null);
+        });
+        this._locationByAddressMarkers = [];
+        this._renderedMarkers = [];
     };
     GoogleMaps.prototype.attached = function () {
         var _this = this;
@@ -225,11 +240,12 @@ var GoogleMaps = (function () {
         this._mapPromise.then(function () {
             geocoder.geocode({ 'address': address }, function (results, status) {
                 if (status === window.google.maps.GeocoderStatus.OK) {
+                    _this._clearMarkers();
                     _this.setCenter(results[0].geometry.location);
                     _this.createMarker({
                         map: _this.map,
                         position: results[0].geometry.location
-                    });
+                    }).then(function (createdMarker) { return _this._locationByAddressMarkers.push(createdMarker); });
                 }
             });
         });

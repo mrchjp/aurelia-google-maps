@@ -39,9 +39,11 @@ declare module "google-maps" {
         _scriptPromise: any;
         _mapPromise: any;
         _mapResolve: any;
+        _locationByAddressMarkers: any[];
         constructor(element: any, taskQueue: any, config: any, bindingEngine: any, eventAggregator: any);
         bind(): void;
         _triggerPropertyChangedHandler(): void;
+        _clearMarkers(): void;
         attached(): void;
         sendBoundsEvent(): void;
         sendApiLoadedEvent(): void;

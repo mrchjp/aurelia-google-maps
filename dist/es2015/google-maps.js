@@ -42,6 +42,7 @@ export let GoogleMaps = class GoogleMaps {
         this._scriptPromise = null;
         this._mapPromise = null;
         this._mapResolve = null;
+        this._locationByAddressMarkers = [];
         this.element = element;
         this.taskQueue = taskQueue;
         this.config = config;
@@ -66,6 +67,9 @@ export let GoogleMaps = class GoogleMaps {
         this.eventAggregator.subscribe('panToMarker', function (data) {
             self.map.panTo(self._renderedMarkers[data.index].position);
             self.map.setZoom(17);
+        });
+        this.eventAggregator.subscribe(`${GM}:clear:marker`, data => {
+            this._clearMarkers();
         });
     }
     bind() {
@@ -115,6 +119,16 @@ export let GoogleMaps = class GoogleMaps {
         if (this.markers && this.markers.length !== this._DEFAULT_MARKERS.length) {
             this.markersChanged(this.markers);
         }
+    }
+    _clearMarkers() {
+        if (!this._locationByAddressMarkers || !this._renderedMarkers) {
+            return;
+        }
+        this._locationByAddressMarkers.concat(this._renderedMarkers).forEach(marker => {
+            marker.setMap(null);
+        });
+        this._locationByAddressMarkers = [];
+        this._renderedMarkers = [];
     }
     attached() {
         this.element.addEventListener('dragstart', evt => {
@@ -220,11 +234,12 @@ export let GoogleMaps = class GoogleMaps {
         this._mapPromise.then(() => {
             geocoder.geocode({ 'address': address }, (results, status) => {
                 if (status === window.google.maps.GeocoderStatus.OK) {
+                    this._clearMarkers();
                     this.setCenter(results[0].geometry.location);
                     this.createMarker({
                         map: this.map,
                         position: results[0].geometry.location
-                    });
+                    }).then(createdMarker => this._locationByAddressMarkers.push(createdMarker));
                 }
             });
         });
