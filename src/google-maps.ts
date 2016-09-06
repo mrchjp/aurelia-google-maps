@@ -313,13 +313,16 @@ export class GoogleMaps {
             geocoder.geocode({'address': address}, (results, status) => {
                 if (status === (<any>window).google.maps.GeocoderStatus.OK) {
                     this._clearMarkers();
-
-                    this.setCenter(results[0].geometry.location);
+                    
+                    let firstResultLocation = results[0].geometry.location;
+                    this.setCenter(firstResultLocation);
 
                     this.createMarker({
                         map: this.map,
-                        position: results[0].geometry.location
+                        position: firstResultLocation
                     }).then(createdMarker => this._locationByAddressMarkers.push(createdMarker));
+
+                    this.eventAggregator.publish(`${GM}:address-search:result`, firstResultLocation);
                 }
             });
         });

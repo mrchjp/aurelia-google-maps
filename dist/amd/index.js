@@ -260,11 +260,13 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
                 geocoder.geocode({ 'address': address }, function (results, status) {
                     if (status === window.google.maps.GeocoderStatus.OK) {
                         _this._clearMarkers();
-                        _this.setCenter(results[0].geometry.location);
+                        var firstResultLocation = results[0].geometry.location;
+                        _this.setCenter(firstResultLocation);
                         _this.createMarker({
                             map: _this.map,
-                            position: results[0].geometry.location
+                            position: firstResultLocation
                         }).then(function (createdMarker) { return _this._locationByAddressMarkers.push(createdMarker); });
+                        _this.eventAggregator.publish(GM + ":address-search:result", firstResultLocation);
                     }
                 });
             });
