@@ -16,6 +16,7 @@ import { Configure } from './configure';
 const GM = 'googlemap';
 const BOUNDSCHANGED = `${GM}:bounds_changed`;
 const CLICK = `${GM}:click`;
+const INFOWINDOWDOMREADY = `${GM}:infowindow:domready`;
 const MARKERCLICK = `${GM}:marker:click`;
 const MARKERMOUSEOVER = `${GM}:marker:mouse_over`;
 const MARKERMOUSEOUT = `${GM}:marker:mouse_out`;
@@ -140,12 +141,12 @@ export let GoogleMaps = class GoogleMaps {
         this._scriptPromise.then(() => {
             let latLng = new window.google.maps.LatLng(parseFloat(this.latitude), parseFloat(this.longitude));
             let mapTypeId = this.getMapTypeId();
-            let options = {
+            let options = Object.assign(this.config.get('options'), {
                 center: latLng,
                 zoom: parseInt(this.zoom, 10),
                 disableDefaultUI: this.disableDefaultUI,
                 mapTypeId: mapTypeId
-            };
+            });
             this.map = new window.google.maps.Map(this.element, options);
             this._mapResolve();
             this.map.addListener('click', (e) => {
@@ -221,6 +222,9 @@ export let GoogleMaps = class GoogleMaps {
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
                         maxWidth: marker.infoWindow.maxWidth
+                    });
+                    createdMarker.infoWindow.addListener('domready', () => {
+                        this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
                     });
                 }
                 if (marker.custom) {

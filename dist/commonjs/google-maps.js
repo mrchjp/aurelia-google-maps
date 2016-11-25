@@ -17,6 +17,7 @@ var configure_1 = require('./configure');
 var GM = 'googlemap';
 var BOUNDSCHANGED = GM + ":bounds_changed";
 var CLICK = GM + ":click";
+var INFOWINDOWDOMREADY = GM + ":infowindow:domready";
 var MARKERCLICK = GM + ":marker:click";
 var MARKERMOUSEOVER = GM + ":marker:mouse_over";
 var MARKERMOUSEOUT = GM + ":marker:mouse_out";
@@ -144,12 +145,12 @@ var GoogleMaps = (function () {
         this._scriptPromise.then(function () {
             var latLng = new window.google.maps.LatLng(parseFloat(_this.latitude), parseFloat(_this.longitude));
             var mapTypeId = _this.getMapTypeId();
-            var options = {
+            var options = Object.assign(_this.config.get('options'), {
                 center: latLng,
                 zoom: parseInt(_this.zoom, 10),
                 disableDefaultUI: _this.disableDefaultUI,
                 mapTypeId: mapTypeId
-            };
+            });
             _this.map = new window.google.maps.Map(_this.element, options);
             _this._mapResolve();
             _this.map.addListener('click', function (e) {
@@ -226,6 +227,9 @@ var GoogleMaps = (function () {
                         pixelOffset: marker.infoWindow.pixelOffset,
                         position: marker.infoWindow.position,
                         maxWidth: marker.infoWindow.maxWidth
+                    });
+                    createdMarker.infoWindow.addListener('domready', function () {
+                        _this.eventAggregator.publish(INFOWINDOWDOMREADY, createdMarker.infoWindow);
                     });
                 }
                 if (marker.custom) {
