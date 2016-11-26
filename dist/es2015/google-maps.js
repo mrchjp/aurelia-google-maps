@@ -184,10 +184,14 @@ export let GoogleMaps = class GoogleMaps {
     renderMarker(marker) {
         let markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
         this._mapPromise.then(() => {
-            this.createMarker({
+            let mapMarker = {
                 map: this.map,
                 position: markerLatLng
-            }).then(createdMarker => {
+            };
+            if (!!marker.label) {
+                mapMarker['label'] = String(marker.label);
+            }
+            this.createMarker(mapMarker).then(createdMarker => {
                 createdMarker.addListener('click', () => {
                     if (!createdMarker.infoWindow) {
                         this.eventAggregator.publish(MARKERCLICK, createdMarker);

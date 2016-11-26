@@ -238,10 +238,14 @@ export class GoogleMaps {
 
         this._mapPromise.then(() => {
             // Create the marker
-            this.createMarker({
+            let mapMarker = {
                 map: this.map,
                 position: markerLatLng
-            }).then(createdMarker => {
+            };
+            if (!!marker.label) {
+                mapMarker['label'] = String(marker.label);
+            }
+            this.createMarker(mapMarker).then(createdMarker => {
                 /* add event listener for click on the marker,
                  * the event payload is the marker itself */
                 createdMarker.addListener('click', () => {

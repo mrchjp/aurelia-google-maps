@@ -209,10 +209,14 @@ define("google-maps", ["require", "exports", 'aurelia-dependency-injection', 'au
             var _this = this;
             var markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
             this._mapPromise.then(function () {
-                _this.createMarker({
+                var mapMarker = {
                     map: _this.map,
                     position: markerLatLng
-                }).then(function (createdMarker) {
+                };
+                if (!!marker.label) {
+                    mapMarker['label'] = String(marker.label);
+                }
+                _this.createMarker(mapMarker).then(function (createdMarker) {
                     createdMarker.addListener('click', function () {
                         if (!createdMarker.infoWindow) {
                             _this.eventAggregator.publish(MARKERCLICK, createdMarker);
