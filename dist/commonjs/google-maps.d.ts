@@ -18,6 +18,7 @@ export declare class GoogleMaps {
     autoUpdateBounds: boolean;
     mapType: string;
     loadMapApiScript: boolean;
+    drawConnectMarkerLines: boolean;
     map: any;
     _renderedMarkers: any[];
     _markersSubscription: any;
@@ -46,6 +47,8 @@ export declare class GoogleMaps {
     longitudeChanged(newValue: any): void;
     zoomChanged(newValue: any): void;
     markersChanged(newValue: any): void;
+    _drawConnectMarkerLines(markers: any): void;
+    _getRandomInt(min: any, max: any): any;
     markerCollectionChange(splices: any): void;
     zoomToMarkerBounds(): void;
     getMapTypeId(): any;

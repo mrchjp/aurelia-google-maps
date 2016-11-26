@@ -11,7 +11,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
         if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
     var aurelia_dependency_injection_1, aurelia_templating_1, aurelia_task_queue_1, aurelia_binding_1, aurelia_event_aggregator_1, configure_1;
-    var GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, GoogleMaps;
+    var GM, BOUNDSCHANGED, CLICK, INFOWINDOWDOMREADY, MARKERCLICK, MARKERMOUSEOVER, MARKERMOUSEOUT, APILOADED, randomColor, GoogleMaps;
     return {
         setters:[
             function (aurelia_dependency_injection_1_1) {
@@ -41,6 +41,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
             MARKERMOUSEOVER = GM + ":marker:mouse_over";
             MARKERMOUSEOUT = GM + ":marker:mouse_out";
             APILOADED = GM + ":api:loaded";
+            randomColor = ['#8c8840', '#ebbfef', '#634b8c', '#591177', '#57bf81', '#26130b', '#ea54d1', '#db27c9', '#e84797', '#092b11', '#545246', '#3e3d3f', '#191c14', '#340742', '#4b97a8', '#6b374e', '#773329', '#a872a5', '#2f332a', '#332d24', '#301805', '#a797c1', '#000000', '#5364d6', '#afc13a', '#5b024b', '#ef7970', '#0b0c01', '#27284c', '#131c19', '#65d3d1', '#372a68', '#b756aa', '#b87abf', '#83179b', '#3a3a3a', '#e0fff6', '#47917e', '#7f8687', '#ad4a5f', '#993d5b', '#70aef9', '#a84a87', '#193842', '#bab07c', '#a35a08', '#aab599', '#751c66', '#5b4b05', '#a57d8b', '#2c302c', '#11353d', '#01381b', '#544447', '#af5b98', '#7aa1bc', '#8f9e90', '#46a067', '#444945', '#b24961', '#093a07', '#a8af8c', '#3c4154', '#000f42', '#555630', '#492e33', '#061f82', '#464149', '#3f5437', '#473151', '#8e66ff', '#635a04', '#140610', '#6d7544', '#543d89', '#b59482', '#a59098', '#b79a50', '#3d03a3', '#5b2425', '#8b9d9e', '#141008', '#f26310', '#405930', '#1e1a0e', '#fcbdd8', '#a6a0bf', '#7f572a', '#aaaa86', '#59271b', '#7c681c', '#010202', '#a0ced8', '#5d8c85', '#365135', '#49333b', '#182a3d', '#e87e78', '#000000', '#08373f'];
             GoogleMaps = (function () {
                 function GoogleMaps(element, taskQueue, config, bindingEngine, eventAggregator) {
                     var _this = this;
@@ -58,6 +59,7 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     this.autoUpdateBounds = false;
                     this.mapType = 'ROADMAP';
                     this.loadMapApiScript = true;
+                    this.drawConnectMarkerLines = false;
                     this.map = null;
                     this._renderedMarkers = [];
                     this._markersSubscription = null;
@@ -397,8 +399,28 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                             var marker = newValue_1[_i];
                             _this.renderMarker(marker);
                         }
+                        if (_this.drawConnectMarkerLines && newValue.length > 1) {
+                            _this._drawConnectMarkerLines(newValue);
+                        }
                     });
                     this.zoomToMarkerBounds();
+                };
+                GoogleMaps.prototype._drawConnectMarkerLines = function (markers) {
+                    for (var i = 1; i < markers.length; i++) {
+                        var firstPoint = { lat: markers[i - 1].latitude, lng: markers[i - 1].longitude };
+                        var secondPoint = { lat: markers[i].latitude, lng: markers[i].longitude };
+                        var flightPath = new window.google.maps.Polyline({
+                            path: [firstPoint, secondPoint],
+                            geodesic: true,
+                            strokeColor: randomColor[this._getRandomInt(0, 99)],
+                            strokeOpacity: 1.0,
+                            strokeWeight: 2
+                        });
+                        flightPath.setMap(this.map);
+                    }
+                };
+                GoogleMaps.prototype._getRandomInt = function (min, max) {
+                    return Math.floor(Math.random() * (max - min + 1)) + min;
                 };
                 GoogleMaps.prototype.markerCollectionChange = function (splices) {
                     if (!splices.length) {
@@ -500,6 +522,10 @@ System.register(['aurelia-dependency-injection', 'aurelia-templating', 'aurelia-
                     aurelia_templating_1.bindable, 
                     __metadata('design:type', Object)
                 ], GoogleMaps.prototype, "loadMapApiScript", void 0);
+                __decorate([
+                    aurelia_templating_1.bindable, 
+                    __metadata('design:type', Boolean)
+                ], GoogleMaps.prototype, "drawConnectMarkerLines", void 0);
                 GoogleMaps = __decorate([
                     aurelia_templating_1.customElement('google-map'),
                     aurelia_dependency_injection_1.inject(Element, aurelia_task_queue_1.TaskQueue, configure_1.Configure, aurelia_binding_1.BindingEngine, aurelia_event_aggregator_1.EventAggregator), 
