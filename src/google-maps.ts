@@ -549,7 +549,13 @@ export class GoogleMaps {
 
     zoomToMarkerBounds() {
         if (this.autoUpdateBounds) {
+            let self = this;
             this._mapPromise.then(() => {
+                if (this.markers.length === 1) {
+                    (<any>window).google.maps.event.addListenerOnce(this.map, 'bounds_changed', function(event) {
+                        this.setZoom(typeof self.zoom === 'number' ? self.zoom : parseInt(self.zoom));
+                    });
+                }
                 let bounds = new (<any>window).google.maps.LatLngBounds();
 
                 for (let marker of this.markers) {

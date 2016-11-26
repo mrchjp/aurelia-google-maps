@@ -409,7 +409,13 @@ var GoogleMaps = (function () {
     GoogleMaps.prototype.zoomToMarkerBounds = function () {
         var _this = this;
         if (this.autoUpdateBounds) {
+            var self_1 = this;
             this._mapPromise.then(function () {
+                if (_this.markers.length === 1) {
+                    window.google.maps.event.addListenerOnce(_this.map, 'bounds_changed', function (event) {
+                        this.setZoom(typeof self_1.zoom === 'number' ? self_1.zoom : parseInt(self_1.zoom));
+                    });
+                }
                 var bounds = new window.google.maps.LatLngBounds();
                 for (var _i = 0, _a = _this.markers; _i < _a.length; _i++) {
                     var marker = _a[_i];

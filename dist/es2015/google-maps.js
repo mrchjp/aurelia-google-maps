@@ -389,7 +389,13 @@ export let GoogleMaps = class GoogleMaps {
     }
     zoomToMarkerBounds() {
         if (this.autoUpdateBounds) {
+            let self = this;
             this._mapPromise.then(() => {
+                if (this.markers.length === 1) {
+                    window.google.maps.event.addListenerOnce(this.map, 'bounds_changed', function (event) {
+                        this.setZoom(typeof self.zoom === 'number' ? self.zoom : parseInt(self.zoom));
+                    });
+                }
                 let bounds = new window.google.maps.LatLngBounds();
                 for (let marker of this.markers) {
                     let markerLatLng = new window.google.maps.LatLng(parseFloat(marker.latitude), parseFloat(marker.longitude));
